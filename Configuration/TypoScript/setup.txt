@@ -1,0 +1,4 @@
+# Disable the tx_solr javascriptFiles, added them manually if you still need jQuery UI for example
+plugin.tx_solr.javascriptFiles >
+
+page.includeJSFooter.maxSolrAutocomplete = EXT:max_solr_autocomplete/Resources/Public/JavaScripts/MaxSolrAutocomplete.js

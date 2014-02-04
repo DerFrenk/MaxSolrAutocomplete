@@ -1,0 +1,7 @@
+{
+    "name": "DerFrenk/max_solr_autocomplete",
+    "type": "typo3cms-extension",
+    "require": {
+        "lw/typo3cms-installers": "*"
+    }
+}
