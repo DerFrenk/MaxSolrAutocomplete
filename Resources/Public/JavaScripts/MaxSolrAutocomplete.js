@@ -1,9 +1,77 @@
+// This autocomplete contains 2 very simple API-calls:
+// - $(document).trigger('MaxSolrAutocomplete.RemoveDropdown'); // Removed the dropdown completely
+// - $(document).trigger('MaxSolrAutocomplete.Initialize'); // Initializes all non-initialized autocomplete fields
+
+// Autocompletion will only work on fields that contain the class 'autocomplete-inputField' and are initialized with
+// the document trigger above.
+
 var tx_solr_suggestUrl = tx_solr_suggestUrl || "";
 
 jQuery(document).ready(function ($) {
     'use strict';
 
     var SolrAutocomplete = {
+
+        initialize: function () {
+            $('.autocomplete-inputField').each(function () {
+                var field = $(this),
+                    timeoutId = null,
+                    previousValue = field.val();
+
+                if (field.data('MaxSolrAutocomplete-initialized') === true) {
+                    return;
+                }
+
+                field.data('MaxSolrAutocomplete-initialized', true);
+                field.attr('autocomplete', 'off');
+
+                field.on('blur.MaxSolrAutocomplete', function () {
+                    SolrAutocomplete.removeDropdown();
+                });
+
+                field.on('keyup.MaxSolrAutocomplete.dataSuggest', function (event) {
+                    // 38 = KEY UP, 40 = KEY DOWN
+                    if (event.keyCode !== 38 && event.keyCode !== 40) {
+
+                        // Only continue if the field value has been changed (and not, F.E., the PAGEUP-key has been pushed)
+                        if (field.val() === previousValue) {
+                            return;
+                        }
+
+                        previousValue = field.val();
+
+                        // If a timeout is set, clear it and set a new one later
+                        if (timeoutId !== null) {
+                            window.clearTimeout(timeoutId);
+                            timeoutId = null;
+                        }
+
+                        // Not enough data has been filled in, so make sure there's no dropdown and stop the execution of this function
+                        if (field.val().length < 3) {
+                            SolrAutocomplete.removeDropdown();
+                            return;
+                        }
+
+                        // Set a delay and get the data after the timeout has passed
+                        timeoutId = window.setTimeout(function () {
+                            SolrAutocomplete.getData(field.val(), $('.tx-solr input[name="L"]').val(), function (data) {
+                                SolrAutocomplete.showDropdown(field, data);
+                            });
+                        }, 400);
+                    } else {
+                        event.preventDefault();
+
+                        if (event.keyCode === 38) {
+                            // Up key, select previous element
+                            SolrAutocomplete.selectPreviousDropdownItem();
+                        } else {
+                            // Down key, select next element
+                            SolrAutocomplete.selectNextDropdownItem();
+                        }
+                    }
+                });
+            });
+        },
 
         getData: function (searchterm, language, callbackFunction) {
             $.getJSON(
@@ -124,60 +192,15 @@ jQuery(document).ready(function ($) {
         }
     };
 
-
-    // ONLOAD CODE
-
-    $(document).on('MaxSolrAutocomplete.RemoveDropdown', function () {
+    $(document).off('MaxSolrAutocomplete.RemoveDropdown').on('MaxSolrAutocomplete.RemoveDropdown', function () {
         SolrAutocomplete.removeDropdown();
     });
 
-    $('.tx-solr-q').addClass('autocomplete-inputField').attr('autocomplete', 'off');
-
-    $('.autocomplete-inputField').each(function () {
-        var field = $(this),
-            timeoutId = null,
-            previousValue = field.val();
-
-        field.on('keyup.MaxSolrAutocomplete.dataSuggest', function (event) {
-            // 38 = KEY UP, 40 = KEY DOWN
-            if (event.keyCode !== 38 && event.keyCode !== 40) {
-
-                // Only continue if the field value has been changed (and not, F.E., the PAGEUP-key has been pushed)
-                if (field.val() === previousValue) {
-                    return;
-                }
-
-                previousValue = field.val();
-
-                // If a timeout is set, clear it and set a new one later
-                if (timeoutId !== null) {
-                    window.clearTimeout(timeoutId);
-                    timeoutId = null;
-                }
-
-                // Not enough data has been filled in, so make sure there's no dropdown and stop the execution of this function
-                if (field.val().length < 3) {
-                    SolrAutocomplete.removeDropdown();
-                    return;
-                }
-
-                // Set a delay and get the data after the timeout has passed
-                timeoutId = window.setTimeout(function () {
-                    SolrAutocomplete.getData(field.val(), $('.tx-solr input[name="L"]').val(), function (data) {
-                        SolrAutocomplete.showDropdown(field, data);
-                    });
-                }, 400);
-            } else {
-                event.preventDefault();
-
-                if (event.keyCode === 38) {
-                    // Up key, select previous element
-                    SolrAutocomplete.selectPreviousDropdownItem();
-                } else {
-                    // Down key, select next element
-                    SolrAutocomplete.selectNextDropdownItem();
-                }
-            }
-        });
+    $(document).off('MaxSolrAutocomplete.Initialize').on('MaxSolrAutocomplete.Initialize', function () {
+        SolrAutocomplete.initialize();
     });
+
+    // Add the class autocomplete-inputField to all solr input fields and then initialize SolrAutocomplete
+    $('.tx-solr-q').addClass('autocomplete-inputField');
+    SolrAutocomplete.initialize();
 });
