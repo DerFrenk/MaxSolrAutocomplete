@@ -25,10 +25,6 @@ jQuery(document).ready(function ($) {
                 field.data('MaxSolrAutocomplete-initialized', true);
                 field.attr('autocomplete', 'off');
 
-                field.on('blur.MaxSolrAutocomplete', function () {
-                    SolrAutocomplete.removeDropdown();
-                });
-
                 field.on('keyup.MaxSolrAutocomplete.dataSuggest', function (event) {
                     // 38 = KEY UP, 40 = KEY DOWN
                     if (event.keyCode !== 38 && event.keyCode !== 40) {
@@ -138,6 +134,15 @@ jQuery(document).ready(function ($) {
             // Reposition the dropdown after each window resize
             $(window).off('resize.MaxSolrAutocomplete').on('resize.MaxSolrAutocomplete', function () {
                 self.positionDropdown(list, inputElement);
+            });
+
+            $(document).off('click.MaxSolrAutocomplete.LoseFocus').on('click.MaxSolrAutocomplete.LoseFocus', function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+
+                if ($(event.target).is(inputElement) === false) {
+                    self.removeDropdown();
+                }
             });
 
             // Put the list on the right position and append it to the body
