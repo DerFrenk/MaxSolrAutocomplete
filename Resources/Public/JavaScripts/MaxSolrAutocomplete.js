@@ -24,6 +24,19 @@ jQuery(document).ready(function ($) {
 
                 field.data('MaxSolrAutocomplete-initialized', true);
                 field.attr('autocomplete', 'off');
+                field.data('value-at-initialization', $(this).val());
+
+                field.on('click.MaxSolrAutocomplete.inputBarClicked', function () {
+                    if (field.val() === field.data('value-at-initialization')) {
+                        field.val('');
+                    }
+                });
+
+                field.on('blur.MaxSolrAutocomplete.inputBarBlurred', function () {
+                    if (field.val() === '') {
+                        field.val(field.data('value-at-initialization'));
+                    }
+                });
 
                 field.on('keyup.MaxSolrAutocomplete.dataSuggest', function (event) {
                     // 38 = KEY UP, 40 = KEY DOWN
