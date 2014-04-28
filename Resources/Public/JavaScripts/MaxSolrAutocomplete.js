@@ -150,9 +150,6 @@ jQuery(document).ready(function ($) {
             });
 
             $(document).off('click.MaxSolrAutocomplete.LoseFocus').on('click.MaxSolrAutocomplete.LoseFocus', function (event) {
-                event.preventDefault();
-                event.stopPropagation();
-
                 if ($(event.target).is(inputElement) === false) {
                     self.removeDropdown();
                 }
