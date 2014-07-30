@@ -5,6 +5,7 @@
 // Autocompletion will only work on fields that contain the class 'autocomplete-inputField' and are initialized with
 // the document trigger above.
 
+/*global window, document, jQuery*/
 var tx_solr_suggestUrl = tx_solr_suggestUrl || "";
 
 jQuery(document).ready(function ($) {
